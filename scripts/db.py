@@ -89,8 +89,10 @@ class Task:
         :return:
         """
         sql = 'DELETE FROM tasks'
+        sql2 = 'UPDATE sqlite_sequence SET SEQ=0 WHERE NAME="tasks";'
         cur = self.__conn.cursor()
         cur.execute(sql)
+        cur.execute(sql2)
         self.__conn.commit()
         print("All Tasks deleted")
 
