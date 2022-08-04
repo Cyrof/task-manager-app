@@ -1,4 +1,3 @@
-from cProfile import label
 import tkinter as tk
 
 # Page class to make frames visible / hidden
