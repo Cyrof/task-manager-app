@@ -1,5 +1,63 @@
+from cProfile import label
 import tkinter as tk
-from tkinter import ttk
+
+# Page class to make frames visible / hidden
+class Page(tk.Frame):
+    def __init__(self, *args, **kwargs):
+        tk.Frame.__init__(self, *args, **kwargs)
+    def show(self):
+        self.lift()
+
+class MainPage(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+        label = tk.Label(self, text="This is the main page")
+        label.pack(side="top", fill="both", expand=True)
+
+class ProjectFolder(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+        label = tk.Label(self, text="This is the project folders page")
+        label.pack(side="top", fill="both", expand=True)
+
+class TasksPage(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+        label = tk.Label(self, text="This is the tasks page")
+        label.pack(side="top", fill="both", expand=True)
+
+class MainView(tk.Frame):
+    def __init__(self, *args, **kwargs):
+        tk.Frame.__init__(self, *args, **kwargs)
+        p1 = MainPage(self)
+        p2 = ProjectFolder(self)
+        p3 = TasksPage(self)
+
+        buttonframe = tk.Frame(self)
+        container = tk.Frame(self)
+        buttonframe.pack(side="top", fill="x", expand=False)
+        container.pack(side="top", fill="both", expand=True)
+
+        p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+
+        b1 = tk.Button(buttonframe, text="Page 1", command=p1.show)
+        b2 = tk.Button(buttonframe, text="Page 2", command=p2.show)
+        b3 = tk.Button(buttonframe, text="Page 3", command=p3.show)
+
+        b1.pack(side="left")
+        b2.pack(side="left")
+        b3.pack(side="left")
+
+        p1.show()
+
+if __name__ == "__main__":
+    window = tk.Tk()
+    main = MainView(window)
+    main.pack(side="top", fill="both", expand=True)
+    window.wm_geometry("400x400")
+    window.mainloop()
 
 # class GUI(tk.Tk):
 
