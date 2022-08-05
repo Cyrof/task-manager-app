@@ -1,124 +1,84 @@
 import tkinter as tk
+import tkinter as ttk
 
-# Page class to make frames visible / hidden
-class Page(tk.Frame):
-    def __init__(self, *args, **kwargs):
-        tk.Frame.__init__(self, *args, **kwargs)
-    def show(self):
-        self.lift()
+class window(tk.Tk):
+    def __init__(self):
+        super().__init__()
 
-class MainPage(Page):
-    def __init__(self, *args, **kwargs):
-        Page.__init__(self, *args, **kwargs)
-        label = tk.Label(self, text="This is the main page")
-        label.pack(side="top", fill="both", expand=True)
+        # adding title to the window 
+        self.wm_title("Task Manager")
 
-class ProjectFolder(Page):
-    def __init__(self, *args, **kwargs):
-        Page.__init__(self, *args, **kwargs)
-        label = tk.Label(self, text="This is the project folders page")
-        label.pack(side="top", fill="both", expand=True)
-
-class TasksPage(Page):
-    def __init__(self, *args, **kwargs):
-        Page.__init__(self, *args, **kwargs)
-        label = tk.Label(self, text="This is the tasks page")
-        label.pack(side="top", fill="both", expand=True)
-
-class MainView(tk.Frame):
-    def __init__(self, *args, **kwargs):
-        tk.Frame.__init__(self, *args, **kwargs)
-        p1 = MainPage(self)
-        p2 = ProjectFolder(self)
-        p3 = TasksPage(self)
-
-        buttonframe = tk.Frame(self)
-        container = tk.Frame(self)
-        buttonframe.pack(side="top", fill="x", expand=False)
+        # creating a frame and assigning it to a container
+        container = tk.Frame(self, height=650, width=900)
+        
+        # specifiying the region where the frame is packed in root
         container.pack(side="top", fill="both", expand=True)
 
-        p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        
 
-        b1 = tk.Button(buttonframe, text="Page 1", command=p1.show)
-        b2 = tk.Button(buttonframe, text="Page 2", command=p2.show)
-        b3 = tk.Button(buttonframe, text="Page 3", command=p3.show)
 
-        b1.pack(side="left")
-        b2.pack(side="left")
-        b3.pack(side="left")
-
-        p1.show()
-
-if __name__ == "__main__":
-    window = tk.Tk()
-    main = MainView(window)
-    main.pack(side="top", fill="both", expand=True)
-    window.wm_geometry("400x400")
-    window.mainloop()
-
-# class GUI(tk.Tk):
-
-#     # __init__ function for class GUI
+#  Page class to make frames visible / hidden
+# class Page(tk.Frame):
 #     def __init__(self, *args, **kwargs):
+#         tk.Frame.__init__(self, *args, **kwargs)
+#     def show(self):
+#         self.lift()
 
-#         # __init__ function for class Tk
-#         tk.Tk.__init__(self, *args, **kwargs)
+# class MainPage(Page):
+#     def __init__(self, *args, **kwargs):
+#         Page.__init__(self, *args, **kwargs)
+#         label = tk.Label(self, text="This is the main page")
+#         # label.pack(side="top", fill="both", expand=True)
 
-#         # creating a container
+#         b_frame_right = tk.Frame(self, bg="#242854")
+#         l2 = tk.Label(self, text="this is the right side frame")
+#         frame_left = tk.Frame(self)
+#         l3 = tk.Label(self, text="This is the left side frame")
+#         b_frame_right.grid(row=0, column=1)
+#         frame_left.grid(row=0, column=0)
+
+
+# class ProjectFolder(Page):
+#     def __init__(self, *args, **kwargs):
+#         Page.__init__(self, *args, **kwargs)
+#         label = tk.Label(self, text="This is the project folders page")
+#         label.pack(side="top", fill="both", expand=True)
+
+# class TasksPage(Page):
+#     def __init__(self, *args, **kwargs):
+#         Page.__init__(self, *args, **kwargs)
+#         label = tk.Label(self, text="This is the tasks page")
+#         label.pack(side="top", fill="both", expand=True)
+
+# class MainView(tk.Frame):
+#     def __init__(self, *args, **kwargs):
+#         tk.Frame.__init__(self, *args, **kwargs)
+#         p1 = MainPage(self)
+#         p2 = ProjectFolder(self)
+#         p3 = TasksPage(self)
+
+#         buttonframe = tk.Frame(self)
 #         container = tk.Frame(self)
+#         buttonframe.pack(side="top", fill="x", expand=False)
 #         container.pack(side="top", fill="both", expand=True)
 
-#         container.grid_rowconfigure(0, weight=1)
-#         container.grid_columnconfigure(0, weight=1)
-#         container.configure(background="#242854")
+#         p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+#         p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+#         p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
-#         # initialize fraces to an empty array
-#         self.frames = {}
+#         b1 = tk.Button(buttonframe, text="Page 1", command=p1.show)
+#         b2 = tk.Button(buttonframe, text="Page 2", command=p2.show)
+#         b3 = tk.Button(buttonframe, text="Page 3", command=p3.show)
 
-#         # iterating through a tuple consisting 
-#         # of the different page layouts
-#         for F in (StartPage):
-#             frame = F(container, self)
+#         b1.pack(side="left")
+#         b2.pack(side="left")
+#         b3.pack(side="left")
 
-#             # initialise frame of that object from
-#             # startpage, page1, page2 respectively with
-#             # for loop
-#             self.frames[F] = frame
-
-#             frame.grid(row=0, column=0, sticky="nsew")
-        
-#         self.show_frame(StartPage)
-
-#     # to display the current frame passed as parameter
-#     def show_frame(self, cont):
-#         frame= self.frames[cont]
-#         frame.tkraise()
-
-# # first window frame Startpage
-# class StartPage(tk.Frame):
-#     def __init__(self, parent, controller):
-#         tk.Frame.__init__(self, parent)
-
-#         # label of fram layout 2
-#         label = ttk.Label(self, text="StartPage")
-
-#         # putting the grid in its place by using grid
-#         label.grid(row=0, column=4, padx=10,pady=10)
-
-#         # button1 = ttk.Button(self, text="Page 1")
-#         # command = lambda : controller.show_frame(Page1)
-    
-
-
-    
-
-
-    
+#         p1.show()
 
 # if __name__ == "__main__":
-#     app = GUI()
-#     app.mainloop()
-
-    
+#     window = tk.Tk()
+#     main = MainView(window)
+#     main.pack(side="top", fill="both", expand=True)
+#     window.wm_geometry("900x650")
+#     window.mainloop()
