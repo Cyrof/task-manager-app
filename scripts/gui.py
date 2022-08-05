@@ -1,84 +1,122 @@
 import tkinter as tk
 import tkinter as ttk
+from turtle import right, width
 
-class window(tk.Tk):
+# app = tk.Tk()
+# app.title("Task Manager")
+# app.geometry("900x650")
+
+# main_container = ttk.Frame(app)
+
+
+# frame_left = ttk.Frame(main_container, width=200, height=650)
+# frame_right = ttk.Frame(main_container, width=700, height=650, bg="#242854")
+
+# main_container.grid_rowconfigure(1, weight=1)
+# main_container.grid_columnconfigure(0, weight=1)
+
+# frame_left.grid(row=0, sticky="w")
+# frame_right.grid(row=0, sticky="e")
+
+# main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+# app.mainloop()
+
+class GUI(tk.Tk):
     def __init__(self):
-        super().__init__()
+        tk.Tk.__init__(self)
+        self.title("Task Manager")
+        self.geometry("900x650")
+        container = ttk.Frame(self)
+        container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
 
-        # adding title to the window 
-        self.wm_title("Task Manager")
+        self.frames = {}
 
-        # creating a frame and assigning it to a container
-        container = tk.Frame(self, height=650, width=900)
+        for F in (MainPage, ProjectPage):
+            frame = F(container, self)
+            self.frames[F] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
         
-        # specifiying the region where the frame is packed in root
-        container.pack(side="top", fill="both", expand=True)
+        self.show_frame(MainPage)
 
-        
+        # frame = MainPage(container, self)
+        # self.frames[MainPage] = frame
 
+        # frame.grid(row=0, column=0, sticky="nsew")
+        # self.show_frame(MainPage)
 
-#  Page class to make frames visible / hidden
-# class Page(tk.Frame):
-#     def __init__(self, *args, **kwargs):
-#         tk.Frame.__init__(self, *args, **kwargs)
-#     def show(self):
-#         self.lift()
-
-# class MainPage(Page):
-#     def __init__(self, *args, **kwargs):
-#         Page.__init__(self, *args, **kwargs)
-#         label = tk.Label(self, text="This is the main page")
-#         # label.pack(side="top", fill="both", expand=True)
-
-#         b_frame_right = tk.Frame(self, bg="#242854")
-#         l2 = tk.Label(self, text="this is the right side frame")
-#         frame_left = tk.Frame(self)
-#         l3 = tk.Label(self, text="This is the left side frame")
-#         b_frame_right.grid(row=0, column=1)
-#         frame_left.grid(row=0, column=0)
+    def show_frame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
 
 
-# class ProjectFolder(Page):
-#     def __init__(self, *args, **kwargs):
-#         Page.__init__(self, *args, **kwargs)
-#         label = tk.Label(self, text="This is the project folders page")
-#         label.pack(side="top", fill="both", expand=True)
 
-# class TasksPage(Page):
-#     def __init__(self, *args, **kwargs):
-#         Page.__init__(self, *args, **kwargs)
-#         label = tk.Label(self, text="This is the tasks page")
-#         label.pack(side="top", fill="both", expand=True)
+class MainPage(ttk.Frame):
 
-# class MainView(tk.Frame):
-#     def __init__(self, *args, **kwargs):
-#         tk.Frame.__init__(self, *args, **kwargs)
-#         p1 = MainPage(self)
-#         p2 = ProjectFolder(self)
-#         p3 = TasksPage(self)
+    def __init__(self, parent, controller):
+        ttk.Frame.__init__(self, parent)
 
-#         buttonframe = tk.Frame(self)
-#         container = tk.Frame(self)
-#         buttonframe.pack(side="top", fill="x", expand=False)
-#         container.pack(side="top", fill="both", expand=True)
+        # main container to store left and right frame
+        main_container = ttk.Frame(self)
 
-#         p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-#         p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-#         p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        # create left and right frame
+        frame_left = ttk.Frame(main_container, width=200, height=650)
+        frame_right = ttk.Frame(
+            main_container, width=700, height=650, bg="#242854")
+        label1 = ttk.Label(frame_right, text="This is the main page", bg="#242854", fg="White")
+        label1.place(relx=.5, rely=.5)
+        button1 = ttk.Button(frame_right, text="project", command=lambda: controller.show_frame(ProjectPage))
+        button1.place(relx=.2, rely=.2)
 
-#         b1 = tk.Button(buttonframe, text="Page 1", command=p1.show)
-#         b2 = tk.Button(buttonframe, text="Page 2", command=p2.show)
-#         b3 = tk.Button(buttonframe, text="Page 3", command=p3.show)
+        # main container grid configuration
+        main_container.grid_rowconfigure(1, weight=1)
+        main_container.grid_columnconfigure(0, weight=1)
 
-#         b1.pack(side="left")
-#         b2.pack(side="left")
-#         b3.pack(side="left")
+        # position each frame respectively
+        frame_left.grid(row=0, sticky="w")
+        frame_right.grid(row=0, sticky="e")
 
-#         p1.show()
+        # pack main container and display it on window
+        main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-# if __name__ == "__main__":
-#     window = tk.Tk()
-#     main = MainView(window)
-#     main.pack(side="top", fill="both", expand=True)
-#     window.wm_geometry("900x650")
-#     window.mainloop()
+class ProjectPage(ttk.Frame):
+
+    def __init__(self, parent, controller):
+        ttk.Frame.__init__(self, parent)
+
+        # main container to store left and right frame
+        project_container = ttk.Frame(self)
+
+        # create left and right frame
+        frame_left = ttk.Frame(project_container, width=200, height=650)
+        frame_right = ttk.Frame(
+            project_container, width=700, height=650, bg="#242854")
+        label1 = ttk.Label(frame_right, text="This is the project page", bg="#242854", fg="White")
+        label1.place(relx=.5, rely=.5)
+        button1 = ttk.Button(frame_right, text="Main", command=lambda: controller.show_frame(MainPage))
+        button1.place(relx=.2, rely=.2)
+
+        # main container grid configuration
+        project_container.grid_rowconfigure(1, weight=1)
+        project_container.grid_columnconfigure(0, weight=1)
+
+        # position each frame respectively
+        frame_left.grid(row=0, sticky="w")
+        frame_right.grid(row=0, sticky="e")
+
+        # pack main container and display it on window
+        project_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+
+
+
+if __name__ == "__main__":
+    app = GUI()
+    app.mainloop()
+    # root = tk.Tk()
+    # root.title("Task Manager")
+    # root.geometry("900x650")
+    # gui = GUI(root)
+    # root.mainloop()
