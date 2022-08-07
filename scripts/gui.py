@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import datetime
+from turtle import width
 from db import Task
 
 
@@ -86,7 +87,7 @@ class MainPage(tk.Frame):
         main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     # function to create canvas
-    def create_canvas(self, parent, width=None, height=None, bg=None):
+    def create_canvas(self, parent, width=None, height=None, bg=None, border_width=None, border_color=None):
         """ Create canvas object
         :param parent: tkinter obj instance
         :param width: width specification for canvas obj
@@ -96,10 +97,59 @@ class MainPage(tk.Frame):
         :return canvas obj:
         """
         canvas = tk.Canvas(parent, width=width, height=height,
-                           bg=bg, highlightthickness=0)
+                           bg=bg, highlightthickness=border_width, highlightcolor=border_color)
 
         return canvas
     
+    def display_task(self, frame):
+        """ Display all tasks onto task mangaer window
+        :param:
+        :return:
+        """
+        all_task = self.__db.get_all_data()
+
+        ycoord = 0.02
+        for task in all_task:
+            
+            # match case to get color base on priority level
+            color = "white"
+            match task[2]:
+                case 'i':
+                    color = "red"
+                case 'u':
+                    color = "#ffbf00"
+                case 'n':
+                    color = "#01c2ff"
+
+            # create canvas frame
+            c = self.create_canvas(frame, border_color="red", border_width=2)
+
+            # create int var for checkbox
+            var = tk.IntVar()
+            task_checkbox = tk.Checkbutton(c, variable=var, onvalue="Completed", offvalue="Incomplete")
+
+            # create clickable task name text
+            task_name_button = tk.Button(c, text=task[1], relief=tk.FLAT, font=('calibri', 12, 'bold'))
+
+            # create color box to display priority level
+            # color_box = tk.Checkbutton(c, selectcolor=color, state=tk.DISABLED, disabledforeground=color)
+            pixel = tk.PhotoImage(width=1, height=1)
+            color_box = tk.Button(c, bg=color, state=tk.DISABLED, height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
+
+            task_checkbox.grid(row=0, column=0)
+            task_name_button.grid(row=0, column=1)
+            color_box.grid(row=1, column=0, pady=0, padx=0)
+
+            c.place(relx=0.1, rely=ycoord)
+            ycoord += 0.09
+
+        
+        
+        
+
+
+
+        pass
 
     def add_task(self, canvas, taskName, priority):
         """ Adding tasks into db 
@@ -121,7 +171,8 @@ class MainPage(tk.Frame):
 
         date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         self.__db.addTask(task_name, lvl, date_time)
-    
+
+
     def cancel_btn(self, c):
         """ Cancel button for task creation
         :param c: canvas frame
@@ -162,10 +213,11 @@ class MainPage(tk.Frame):
         dropdown = tk.OptionMenu(c, menu, *choices)
         dropdown.grid(row=1, column=1)
 
-        b_cancel = tk.Button(c, text="Cancel", command=lambda: [self.cancel_btn(c)])
+        b_cancel = tk.Button(c, text="Cancel", command=lambda: [
+                             self.cancel_btn(c)])
         b_cancel.grid(row=1, column=3)
 
-        c.place(relx=.01, rely=.02)
+        c.place(relx=.01, rely=0.2)
 
     def task_list_frame(self, container):
         """ Create the task list frame for the main page
@@ -178,6 +230,8 @@ class MainPage(tk.Frame):
         l1 = tk.Label(task_list_frame,
                       text="This is the task list frame", relief=tk.FLAT)
         l1.place(relx=.2, rely=.5)
+
+        self.display_task(task_list_frame)
 
         return task_list_frame
 

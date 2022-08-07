@@ -107,7 +107,22 @@ class Task:
         cur.execute(sql)
         self.__conn.commit()
         print("Table deleted")
+    
+    def get_all_data(self):
+        """ Get all data from db
+        :param:
+        :return data as a 2d list:
+        """
+        sql = 'SELECT * FROM tasks'
+        cur = self.__conn.cursor()
+        cur.execute(sql)
+
+        rows = cur.fetchall()
+
+        data = [[d for d in row] for row in rows]
+        return data
+
 
 if __name__ == "__main__":
     t = Task()
-    t.delete_all_task()
+    t.get_all_data()
