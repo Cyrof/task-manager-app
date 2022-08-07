@@ -3,7 +3,8 @@ import sqlite3
 sql_task_table = """ CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_name TEXT NOT NULL,
-    urgent_lvl CHAR NOT NULL
+    urgent_lvl CHAR NOT NULL,
+    datetime VARCHAR NOT NULL
     ); """
 
 
@@ -17,20 +18,21 @@ class Task:
         else:
             print("Error! cannot create a database connection.")
 
-    def insertVariableIntoTable(self, task, lvl):
+    def insertVariableIntoTable(self, task, lvl, datetime):
         """ Inserts variable into SQLite table with specific param
         :param task: user inputted task
         :param lvl: urgency level chosen by user
+        :param datetime: store the date and time of when task is created
         :return:
         """
         try:
             cur = self.__conn.cursor()
 
             insert_data_with_param = """ INSERT INTO tasks (
-                task_name, urgent_lvl)
-                VALUES (?, ?); """
+                task_name, urgent_lvl, datetime)
+                VALUES (?, ?, ?); """
             
-            data_tuple = (task, lvl)
+            data_tuple = (task, lvl, datetime)
             cur.execute(insert_data_with_param, data_tuple)
             self.__conn.commit()
             print("Data added")
@@ -38,9 +40,9 @@ class Task:
             print("Failed to insert Python variable into sqlite table", e)
 
 
-    def addTask(self, task_name, lvl):
+    def addTask(self, task_name, lvl, datetime):
         self.__task = task_name
-        self.insertVariableIntoTable(self.__task, lvl)
+        self.insertVariableIntoTable(self.__task, lvl, datetime)
 
     def create_connection(self, db_path):
         """ create a database connection to the SQLite database
@@ -95,6 +97,16 @@ class Task:
         cur.execute(sql2)
         self.__conn.commit()
         print("All Tasks deleted")
+    
+    def delete_table(self):
+        """ Delete table from db file
+        :return:
+        """
+        sql = 'DROP TABLE tasks;'
+        cur = self.__conn.cursor()
+        cur.execute(sql)
+        self.__conn.commit()
+        print("Table deleted")
 
 if __name__ == "__main__":
     t = Task()

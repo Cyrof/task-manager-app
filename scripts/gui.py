@@ -1,150 +1,231 @@
 import tkinter as tk
-import tkinter as ttk
-
-# # GUI class for task manager app
-# class GUI(tk.Tk):
-#     def __init__(self):
-#         tk.Tk.__init__(self)
-#         """ config main container to be shwon on gui window
-#         :instance variable self.title: set title 
-#         :instance variable self.geometry: set the starting window size
-#         :variable container: configure container size and grid
-#         :instance variable self.frames: store frames of other classes
-#         :return:
-#         """
-#         self.title("Task Manager")
-#         self.geometry("900x650")
-#         container = ttk.Frame(self)
-#         container.pack(side=tk.TOP, fill=tk.BOTH, expand=False)
-#         container.grid_rowconfigure(0, weight=1)
-#         container.grid_columnconfigure(0, weight=1)
-
-#         self.frames = {}
-
-#         for F in (MainPage, ProjectPage):
-#             frame = F(container, self)
-#             self.frames[F] = frame
-#             frame.grid(row=0, column=0, sticky="nsew")
-        
-#         self.show_frame(MainPage)
+from tkinter import ttk
+import datetime
+from db import Task
 
 
-#     def show_frame(self, cont):
-#         """ Display frame onto window
-#         :param cont: take in class instance frame
-#         :return:
-#         """
-#         frame = self.frames[cont]
-#         frame.tkraise()
+class GUI(tk.Tk):
+    def __init__(self):
+        tk.Tk.__init__(self)
+        """ Config main container to be shown on GUI window
+        :instance variable self.title: set the title of the application
+        :instance variable self.geometry: set the starting window size
+        :instance variable self.resizable: disable resize from window
+        :variable container: configure container size and grid
+        :instance variable self.frames: store frames of other classes
+        :return:
+        """
+        # configure GUI window
+        self.title("Task Manager")
+        self.geometry("900x650")
+        self.resizable(height=False, width=False)
+
+        # create the container to display other class frames
+        container = tk.Frame(self)
+        container.pack(side=tk.TOP, fill=tk.BOTH, expand=False)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        # create frame dictionary to store frames
+        self.__frames = {}
+
+        for F in (MainPage, ProjectPage):
+            frame = F(container, self)
+            self.__frames[F] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+
+        self.show_frame(MainPage)
+
+    def show_frame(self, cont):
+        """ Display frame onto window
+        :param cont: take in class instance frame
+        :return:
+        """
+        frame = self.__frames[cont]
+        frame.tkraise()
 
 
+class MainPage(tk.Frame):
 
-# class MainPage(ttk.Frame):
+    def __init__(self, parent, controller):
+        """ init function for MainPage class 
+        :param parent: main frame container from GUI class
+        :param controller: instance of GUI class
+        :return:
+        """
+        self.__db = Task()
 
-#     def __init__(self, parent, controller):
-#         ttk.Frame.__init__(self, parent)
+        # inherit from parent
+        tk.Frame.__init__(self, parent)
 
-#         # main container to store left and right frame
-#         main_container = ttk.Frame(self, highlightcolor="black", highlightthickness=2)
-#         l = ttk.Label(main_container, text="Main container")
-#         l.place(relx=.1, rely=.1)
+        # main container of MainPage class
+        main_container = tk.Frame(self, bg="#242854")
 
-#         # create left and right frame
-#         frame_left = ttk.Frame(main_container, width=200, height=650, highlightthickness=2, highlightbackground="blue")
-#         label2 = ttk.Label(frame_left, text="This is the main page")
-#         label2.place(relx=.1, rely=.2)
+        # create left and right frame
+        self.__task_list_frame = self.task_list_frame(main_container)
+        self.__task_detail_frame = self.task_detail_frame(main_container)
+        side_navbar = self.side_nav_bar_frame(main_container)
+        sep = ttk.Separator(main_container, orient="vertical")
 
-#         frame_right = ttk.Frame(
-#             main_container, width=700, height=650, bg="#242854")
-#         label1 = ttk.Label(frame_right, text="This is the main page", bg="#242854", fg="White")
-#         label1.place(relx=.5, rely=.5)
-#         button1 = ttk.Button(frame_right, text="project", command=lambda: controller.show_frame(ProjectPage))
-#         button1.place(relx=.2, rely=.2)
+        # config main container grid
+        main_container.grid_rowconfigure(1, weight=1)
+        main_container.grid_columnconfigure(0, weight=1)
 
-#         # main container grid configuration
-#         main_container.grid_rowconfigure(1, weight=1)
-#         main_container.grid_columnconfigure(0, weight=1)
+        # place left and right frame into container using grid
+        side_navbar.grid(row=0, column=0)
+        # left_frame.pack(side=tk.LEFT)
+        # right_frame.pack(side=tk.RIGHT, padx=25, pady=(125, 25))
+        # right_frame.grid(row=0, column=1, padx=25, pady=(125, 25))
+        self.__task_list_frame.grid(
+            row=0, column=1, padx=(25, 0), pady=(125, 25))
+        sep.grid(row=0, column=2)
+        self.__task_detail_frame.grid(
+            row=0, column=3, padx=(0, 25), pady=(125, 25))
 
-#         # position each frame respectively
-#         frame_left.grid(row=0, column=0)
-#         frame_right.grid(row=0, column=1)
+        # display container using pack
+        main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-#         # pack main container and display it on window
-#         main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    # function to create canvas
+    def create_canvas(self, parent, width=None, height=None, bg=None):
+        """ Create canvas object
+        :param parent: tkinter obj instance
+        :param width: width specification for canvas obj
+        :param height: height specification for canvas obj
+        :param bg: background color
+        :param fg: foregrounf color 
+        :return canvas obj:
+        """
+        canvas = tk.Canvas(parent, width=width, height=height,
+                           bg=bg, highlightthickness=0)
 
-# class ProjectPage(ttk.Frame):
-
-#     def __init__(self, parent, controller):
-#         ttk.Frame.__init__(self, parent)
-
-#         # main container to store left and right frame
-#         project_container = ttk.Frame(self)
-
-#         # create left and right frame
-#         frame_left = ttk.Frame(project_container, width=200, height=650)
-#         frame_right = ttk.Frame(
-#             project_container, width=700, height=650, bg="#242854")
-#         label1 = ttk.Label(frame_right, text="This is the project page", bg="#242854", fg="White")
-#         label1.place(relx=.5, rely=.5)
-#         button1 = ttk.Button(frame_right, text="Main", command=lambda: controller.show_frame(MainPage))
-#         button1.place(relx=.2, rely=.2)
-
-#         # main container grid configuration
-#         project_container.grid_rowconfigure(1, weight=1)
-#         project_container.grid_columnconfigure(0, weight=1)
-
-#         # position each frame respectively
-#         frame_left.grid(row=0, sticky="w")
-#         frame_right.grid(row=0, sticky="e")
-
-#         # pack main container and display it on window
-#         project_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-
-
-
-# if __name__ == "__main__":
-#     app = GUI()
-#     app.mainloop()
-#     # root = tk.Tk()
-#     # root.title("Task Manager")
-#     # root.geometry("900x650")
-#     # gui = GUI(root)
-#     # root.mainloop()
-
-
-class GUI:
-    def __init__(self, root):
-        self.__window = root
-        self.__container = ttk.Frame(self.__window)
-        self.mainPage()
-        self.__container.pack()
-        
+        return canvas
     
-    def mainPage(self):
-        b1 = ttk.Button(self.__container, text="Add Tasks", command= lambda: self.createTask())
-        b1.pack()
-        
+
+    def add_task(self, canvas, taskName, priority):
+        """ Adding tasks into db 
+        :param canvas: canvas frame
+        :param taskName: name of task
+        :param priority: priority level of task
+        """
+        canvas.destroy()
+        task_name = taskName
+        lvl = priority
+
+        match lvl:
+            case "Important":
+                lvl = "i"
+            case "Urgent":
+                lvl = "u"
+            case "Normal":
+                lvl = "n"
+
+        date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+        self.__db.addTask(task_name, lvl, date_time)
     
-    def createCheck(self, task):
-        self.check = ttk.Checkbutton(self.__container, text=task)
-        self.check.pack()
+    def cancel_btn(self, c):
+        """ Cancel button for task creation
+        :param c: canvas frame
+        :return:
+        """
+        c.destroy()
 
-    def submit(self):
-        text = self.entry1.get()
-        print(text)
-        self.entry1.pack_forget()
-        self.sub.pack_forget()
-        self.createCheck(text)
+    def task_button_state(self, task, b):
+        new_state = "disabled" if task == "" else "normal"
+        b.configure(state=new_state)
 
-    def createTask(self):
-        self.entry1 = tk.Entry(self.__container)
-        self.entry1.pack()
-        self.sub = ttk.Button(self.__container, text="submit", command=lambda: self.submit())
-        self.sub.pack()
-        
+    def create_task_button(self, frame):
+        """ Create canvas to store entry for user and drop down and add task button
+        :param frame: frame of where the items will b displayed
+        :return:
+        """
+
+        # c = canvas, l = label, entry = entry, menu = stringVar
+        c = self.create_canvas(frame, width=300)
+
+        l1 = tk.Label(c, text="Task name: ")
+        l1.grid(row=0, column=0)
+
+        b_task = tk.Button(c, text="Add Task", state=tk.DISABLED, command=lambda: [
+            self.add_task(c, self.task_entry.get(), menu.get())])
+        b_task.grid(row=1, column=2)
+
+        taskvar = tk.StringVar()
+        taskvar.trace(
+            "w", lambda *args: self.task_button_state(self.task_entry.get(), b_task))
+        taskvar.set("")
+        self.task_entry = tk.Entry(c, textvariable=taskvar)
+        self.task_entry.grid(row=0, column=1)
+
+        menu = tk.StringVar(c)
+        choices = {'Normal', 'Urgent', 'Important'}
+        menu.set('Normal')
+        dropdown = tk.OptionMenu(c, menu, *choices)
+        dropdown.grid(row=1, column=1)
+
+        b_cancel = tk.Button(c, text="Cancel", command=lambda: [self.cancel_btn(c)])
+        b_cancel.grid(row=1, column=3)
+
+        c.place(relx=.01, rely=.02)
+
+    def task_list_frame(self, container):
+        """ Create the task list frame for the main page
+        :param container: Container frame of the main page
+        :return frame: return task list frame
+        """
+        task_list_frame = tk.Frame(container, width=325, height=500)
+        # entry = tk.Entry(self.__task_list_frame)
+        # entry.place(relx=.1, rely=.5)
+        l1 = tk.Label(task_list_frame,
+                      text="This is the task list frame", relief=tk.FLAT)
+        l1.place(relx=.2, rely=.5)
+
+        return task_list_frame
+
+    def task_detail_frame(self, container):
+        """ Create task detail frame for the main page
+        :param container: Container frame of main page
+        :return frame: return task detail frame
+        """
+        task_detail_frame = tk.Frame(container, width=325, height=500)
+        l1 = tk.Label(task_detail_frame, text="This is the task detail frame")
+        l1.place(relx=.2, rely=.5)
+
+        return task_detail_frame
+
+    def side_nav_bar_frame(self, container):
+        """ Create left side for the main page
+        :param container: Container frame of main page
+        :return frame: return left side frame
+        """
+        left_main_frame = tk.Frame(
+            container, width=200, height=650, highlightcolor="red", highlightthickness=3)
+        l1 = tk.Label(left_main_frame, text="This is the left main frame")
+
+        # Create task button
+        b1 = tk.Button(left_main_frame, text="Create Task", width=20, bg="#2F2E41",
+                       activebackground="#52506e", activeforeground="white", fg="white", relief=tk.FLAT, command=lambda: self.create_task_button(self.__task_list_frame))
+        b1.place(bordermode=tk.INSIDE, relx=.1, rely=.1)
+
+        # Create Project button
+        b2 = tk.Button(left_main_frame, text="Create Project", width=20,
+                       bg="#F4E8CE", activebackground="#f5ecd7", relief=tk.FLAT)
+        b2.place(bordermode=tk.INSIDE, relx=.1, rely=.17)
+
+        l1.place(relx=.1, rely=.5)
+
+        return left_main_frame
+
+
+class ProjectPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        project_container = tk.Frame(self)
+
+        project_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
 
 if __name__ == "__main__":
-    app = tk.Tk()
-    gui = GUI(app)
+    app = GUI()
     app.mainloop()
