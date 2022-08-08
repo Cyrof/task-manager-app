@@ -124,5 +124,16 @@ class Task:
 
 
 if __name__ == "__main__":
+    import random
+    import datetime
     t = Task()
-    t.get_all_data()
+    
+    lvl = ['i', 'u', 'n']
+
+    date_time = datetime.datetime.now().strftime("%d/%M/%Y %H:%M")
+
+    counter = 1
+    for x in range(20):
+        task_name = "test" + str(counter)
+        t.addTask(task_name, str(random.choice(lvl)), date_time)
+        counter += 1

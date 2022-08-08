@@ -1,5 +1,6 @@
+from cgi import test
 import tkinter as tk
-from tkinter import ttk
+from tkinter import E, RIGHT, ttk
 import datetime
 from turtle import width
 from db import Task
@@ -108,48 +109,81 @@ class MainPage(tk.Frame):
         """
         all_task = self.__db.get_all_data()
 
-        ycoord = 0.02
-        for task in all_task:
+        # ycoord = 0.02
+        # for task in all_task:
             
-            # match case to get color base on priority level
-            color = "white"
-            match task[2]:
-                case 'i':
-                    color = "red"
-                case 'u':
-                    color = "#ffbf00"
-                case 'n':
-                    color = "#01c2ff"
+        #     # match case to get color base on priority level
+        #     color = "white"
+        #     match task[2]:
+        #         case 'i':
+        #             color = "red"
+        #         case 'u':
+        #             color = "#ffbf00"
+        #         case 'n':
+        #             color = "#01c2ff"
 
-            # create canvas frame
-            c = self.create_canvas(frame, border_color="red", border_width=2)
+        #     # create canvas frame
+        #     c = self.create_canvas(frame, border_color="red", border_width=2)
 
-            # create int var for checkbox
-            var = tk.IntVar()
-            task_checkbox = tk.Checkbutton(c, variable=var, onvalue="Completed", offvalue="Incomplete")
+        #     # create int var for checkbox
+        #     var = tk.IntVar()
+        #     task_checkbox = tk.Checkbutton(c, variable=var, onvalue="Completed", offvalue="Incomplete")
 
-            # create clickable task name text
-            task_name_button = tk.Button(c, text=task[1], relief=tk.FLAT, font=('calibri', 12, 'bold'))
+        #     # create clickable task name text
+        #     task_name_button = tk.Button(c, text=task[1], relief=tk.FLAT, font=('calibri', 12, 'bold'))
 
-            # create color box to display priority level
-            # color_box = tk.Checkbutton(c, selectcolor=color, state=tk.DISABLED, disabledforeground=color)
-            pixel = tk.PhotoImage(width=1, height=1)
-            color_box = tk.Button(c, bg=color, state=tk.DISABLED, height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
+        #     # create color box to display priority level
+        #     # color_box = tk.Checkbutton(c, selectcolor=color, state=tk.DISABLED, disabledforeground=color)
+        #     pixel = tk.PhotoImage(width=1, height=1)
+        #     color_box = tk.Button(c, bg=color, state=tk.DISABLED, height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
 
-            task_checkbox.grid(row=0, column=0)
-            task_name_button.grid(row=0, column=1)
-            color_box.grid(row=1, column=0, pady=0, padx=0)
+        #     task_checkbox.grid(row=0, column=0)
+        #     task_name_button.grid(row=0, column=1)
+        #     color_box.grid(row=1, column=0, pady=0, padx=0)
 
-            c.place(relx=0.1, rely=ycoord)
-            ycoord += 0.09
+        #     c.place(relx=0.1, rely=ycoord)
+        #     ycoord += 0.09
 
+
+        # create canvas for task list frame
+        # main_c = tk.Canvas(frame)
+
+        # # create scroll bar for canvas
+        # scroll = tk.Scrollbar(frame)
+        # scroll.place(relx=0.95, rely=0, relheight=1)
+        # scroll.config(command=main_c.yview)
         
+        # main_c.configure()
+        # # create ycoord for increment
+        # ycoord = 0.02
+        # # create for loop to print out all data
+        # for x in range(100):
+        #     # create frame to store one task 
+        #     task_frame = tk.Frame(main_c)
+        #     # print(f'{str(x)}')
+        #     # create int var for checkbox
+        #     var = tk.IntVar()
+        #     task_checkbox = tk.Checkbutton(task_frame, variable=var, onvalue="Completeted", offvalue="Incomplete")
+
+        #     # l = tk.Label(task_frame, text=f"This is a test line")
+        #     # l.grid(row=0, column=1)
+        #     l = tk.Label(task_frame, text=f"this is a test {str(x)}")
+        #     l.grid(row=0, column=0)
+
+        #     task_frame.pack()
         
+        # def on_configure(event):
+        #     main_c.configure(scrollregion=main_c.bbox("all"))
+        
+        # main_c.bind('<Configure>', on_configure)
+        # main_c.config(height=500, width=325)
+        # main_c.config(yscrollcommand=scroll.set)
+        # main_c.place(relx=0, rely=0)
+
+        # create canvas for task list frame 
+        main_c = tk.Canvas(frame)
         
 
-
-
-        pass
 
     def add_task(self, canvas, taskName, priority):
         """ Adding tasks into db 
@@ -225,11 +259,6 @@ class MainPage(tk.Frame):
         :return frame: return task list frame
         """
         task_list_frame = tk.Frame(container, width=325, height=500)
-        # entry = tk.Entry(self.__task_list_frame)
-        # entry.place(relx=.1, rely=.5)
-        l1 = tk.Label(task_list_frame,
-                      text="This is the task list frame", relief=tk.FLAT)
-        l1.place(relx=.2, rely=.5)
 
         self.display_task(task_list_frame)
 
@@ -261,9 +290,9 @@ class MainPage(tk.Frame):
         b1.place(bordermode=tk.INSIDE, relx=.1, rely=.1)
 
         # Create Project button
-        b2 = tk.Button(left_main_frame, text="Create Project", width=20,
-                       bg="#F4E8CE", activebackground="#f5ecd7", relief=tk.FLAT)
-        b2.place(bordermode=tk.INSIDE, relx=.1, rely=.17)
+        # b2 = tk.Button(left_main_frame, text="Create Project", width=20,
+        #                bg="#F4E8CE", activebackground="#f5ecd7", relief=tk.FLAT)
+        # b2.place(bordermode=tk.INSIDE, relx=.1, rely=.17)
 
         l1.place(relx=.1, rely=.5)
 
