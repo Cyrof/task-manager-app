@@ -1,8 +1,6 @@
-from cgi import test
 import tkinter as tk
-from tkinter import E, RIGHT, ttk
+from tkinter import ttk
 import datetime
-from turtle import width
 from db import Task
 
 
@@ -180,9 +178,57 @@ class MainPage(tk.Frame):
         # main_c.config(yscrollcommand=scroll.set)
         # main_c.place(relx=0, rely=0)
 
+        # inner function to config scrollregion
+        def on_configure(event):
+            main_c.configure(scrollregion=main_c.bbox('all'))
+
         # create canvas for task list frame 
         main_c = tk.Canvas(frame)
-        
+        main_c.place(relx=0, rely=0, relheight=1, relwidth=1)
+
+        # frame to add stuff to screen 
+        canvas_frame = tk.Frame(main_c)
+        # resize the canvas scroll region each time the size of the frame changes
+        frame.bind('<Configure>', on_configure)
+        # display frame inside the canvas
+        main_c.create_window(0, 0, window=canvas_frame)
+
+        scroll = tk.Scrollbar(frame, command=main_c.yview)
+        scroll.place(relx=0.95, rely=0, relheight=1)
+        main_c.configure(yscrollcommand=scroll.set)
+
+        for task in all_task:
+            # match case to get color base on priority level
+            color = "white"
+            match task[2]:
+                case 'i':
+                    color = "red"
+                case 'u':
+                    color = "#ffbf00"
+                case 'n':
+                    color = "#01c2ff"
+
+            # tk.Label(canvas_frame, text=f"label {x}").pack()
+            # create canvas to store widgets
+            c = tk.Canvas(canvas_frame)
+            
+            # create int var for checkbox
+            var = tk.IntVar()
+            task_checkbox = tk.Checkbutton(c, variable=var, onvalue="Completed", offvalue="Incomplete")
+
+            # create clickable task name text
+            task_name_button = tk.Button(c, text=task[1], relief=tk.FLAT, font=('calibri', 12, 'bold'))
+
+            # create color box to display priority level
+            pixel = tk.PhotoImage(width=1, height=1)
+            color_box = tk.Button(c, bg=color, state=tk.DISABLED, height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
+
+            # display widget
+            task_checkbox.grid(row=0, column=0)
+            task_name_button.grid(row=0, column=1)
+            color_box.grid(row=1, column=0, padx=0, pady=0)
+
+            c.pack(fill=tk.BOTH, side=tk.TOP)
 
 
     def add_task(self, canvas, taskName, priority):
