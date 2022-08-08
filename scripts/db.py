@@ -127,6 +127,7 @@ if __name__ == "__main__":
     import random
     import datetime
     t = Task()
+    t.delete_all_task()
     
     lvl = ['i', 'u', 'n']
 
