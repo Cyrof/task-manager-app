@@ -87,24 +87,18 @@ class MainPage(tk.Frame):
 
         # display container using pack
         main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-    # function to create canvas
-    def create_canvas(self, parent, width=None, height=None, bg=None, border_width=None, border_color=None):
-        """ Create canvas object
-        :param parent: tkinter obj instance
-        :param width: width specification for canvas obj
-        :param height: height specification for canvas obj
-        :param bg: background color
-        :param fg: foregrounf color 
-        :return canvas obj:
+    
+    def update_display_task(self):
+        """ Update display of task to task manager window
+        :return:
         """
-        canvas = tk.Canvas(parent, width=width, height=height,
-                           bg=bg, highlightthickness=border_width, highlightcolor=border_color)
-
-        return canvas
+        self.__main_c.destroy()
+        self.__scroll.destroy()
+        self.display_task(self.__task_list_container)
+        pass
 
     def display_task(self, frame):
-        """ Display all tasks onto task mangaer window
+        """ Display all tasks onto task manager window
         :param frame: parent frame
         :return:
         """
@@ -112,23 +106,23 @@ class MainPage(tk.Frame):
 
         # inner function to config scrollregion
         def on_configure(event):
-            main_c.configure(scrollregion=main_c.bbox('all'))
+            self.__main_c.configure(scrollregion=self.__main_c.bbox('all'))
 
         # create canvas for task list frame
-        main_c = tk.Canvas(frame)
-        main_c.place(relx=0, rely=0, relheight=1, relwidth=1)
+        self.__main_c = tk.Canvas(frame)
+        self.__main_c.place(relx=0, rely=0, relheight=1, relwidth=1)
 
         # frame to add stuff to screen
-        canvas_frame = tk.Frame(main_c)
+        canvas_frame = tk.Frame(self.__main_c)
         # resize the canvas scroll region each time the size of the frame changes
         frame.bind('<Configure>', on_configure)
         # display frame inside the canvas
-        main_c.create_window(0, 0, window=canvas_frame)
+        self.__main_c.create_window(0, 0, window=canvas_frame)
 
         # create scroll bar for task list
-        scroll = tk.Scrollbar(frame, command=main_c.yview)
-        scroll.place(relx=0.95, rely=0, relheight=1)
-        main_c.configure(yscrollcommand=scroll.set)
+        self.__scroll = tk.Scrollbar(frame, command=self.__main_c.yview)
+        self.__scroll.place(relx=0.95, rely=0, relheight=1)
+        self.__main_c.configure(yscrollcommand=self.__scroll.set)
 
         # for loop to display task onto task list page
         for task in all_task:
@@ -174,7 +168,11 @@ class MainPage(tk.Frame):
         """
         task_list_frame = tk.Frame(container, width=325, height=500)
 
-        self.display_task(task_list_frame)
+        self.__task_list_container = tk.Frame(task_list_frame, width=325, height=500)
+        self.__task_list_container.pack()
+        
+
+        self.display_task(self.__task_list_container)
 
         return task_list_frame
 
@@ -189,6 +187,19 @@ class MainPage(tk.Frame):
 
         return task_detail_frame
 
+    def add_task_button_action(self, task_name, priority, due_date, desc=None):
+        match priority:
+            case "Important":
+                lvl = "i"
+            case "Urgent":
+                lvl = "u"
+            case "Normal":
+                lvl = "n"
+
+        date_time = datetime.datetime.now().strftime("%d/%M/%Y %H:%M")
+
+        self.__db.addTask(task_name, lvl, date_time, due_date, desc)
+
     def side_nav_bar_frame(self, container):
         """ Create left side for the main page
         :param container: Container frame of main page
@@ -198,15 +209,17 @@ class MainPage(tk.Frame):
         left_main_frame = tk.Frame(
             container, width=200, height=650, highlightthickness=0, highlightcolor="white")
 
-        # create canvas to container widget 
+        # create canvas to container widget
         left_main_canvas = tk.Canvas(left_main_frame)
         left_main_canvas.place(relx=0, rely=0, relheight=1, relwidth=1)
 
-        # create name for task manager 
-        tk.Label(left_main_canvas, text="Name", font=('Segoe Script', 12, 'bold')).pack(padx=(0,100), pady=(10,0))
+        # create name for task manager
+        tk.Label(left_main_canvas, text="Name", font=(
+            'Segoe Script', 12, 'bold')).pack(padx=(0, 100), pady=(10, 0))
 
         # seperator line
-        ttk.Separator(left_main_canvas, orient="horizontal").pack(fill=tk.X, pady=(50,0))
+        ttk.Separator(left_main_canvas, orient="horizontal").pack(
+            fill=tk.X, pady=(50, 0))
 
         # add task frame, configure and display onto nav frame
         add_task_frame = tk.Frame(
@@ -220,53 +233,50 @@ class MainPage(tk.Frame):
             add_task_frame, text="Add a Task", font=('Nunito Sans', 11, 'bold'), bg="#F8DEAC")
         add_task_label.pack(padx=(0, 80), pady=(10, 40))
 
-        # create task task name label and task name entry 
+        # create task task name label and task name entry
         task_name_label = tk.Label(
             add_task_frame, text="Task Name", bg="#F8DEAC", font=('Nunito Sans', 9))
         task_name_entry = tk.Entry(add_task_frame, width=25)
         task_name_label.pack(padx=(0, 100))
         task_name_entry.pack()
 
-        # create task priority label and dropdown list 
-        task_priority_label = tk.Label(add_task_frame, text="Task Piority", bg="#F8DEAC", font=('Nunito Sans', 9))
+        # create task priority label and dropdown list
+        task_priority_label = tk.Label(
+            add_task_frame, text="Task Piority", bg="#F8DEAC", font=('Nunito Sans', 9))
         # create string var
         dropdown_var = tk.StringVar()
-        task_priority_dropdown = ttk.Combobox(add_task_frame, textvariable=dropdown_var, width=22, state="readonly")
+        task_priority_dropdown = ttk.Combobox(
+            add_task_frame, textvariable=dropdown_var, width=22, state="readonly")
         task_priority_dropdown['values'] = ('Normal', 'Urgent', 'Important')
 
-        task_priority_label.pack(padx=(0, 100), pady=(10,0))
+        task_priority_label.pack(padx=(0, 100), pady=(10, 0))
         task_priority_dropdown.pack()
 
         # create date entry box
-        task_duedate_label = tk.Label(add_task_frame, text="Due Date", bg="#F8DEAC", font=('Nunito Sans', 9))
-        task_calendar_entry = DateEntry(add_task_frame, selectmode="day", width=22)
-        task_duedate_label.pack(padx=(0, 110), pady=(10,0))
+        task_duedate_label = tk.Label(
+            add_task_frame, text="Due Date", bg="#F8DEAC", font=('Nunito Sans', 9))
+        task_calendar_entry = DateEntry(
+            add_task_frame, selectmode="day", width=22)
+        task_duedate_label.pack(padx=(0, 110), pady=(10, 0))
         task_calendar_entry.pack()
 
         # create optional task description
-        task_desc_label = tk.Label(add_task_frame, text="Task Description (Optional)", bg="#F8DEAC", font=('Nunito Sans', 9))
+        task_desc_label = tk.Label(
+            add_task_frame, text="Task Description (Optional)", bg="#F8DEAC", font=('Nunito Sans', 9))
         task_desc_text = tk.Text(add_task_frame, width=18, height=5)
-        task_desc_label.pack(padx=(0, 15), pady=(10,0))
+        task_desc_label.pack(padx=(0, 15), pady=(10, 0))
         task_desc_text.pack()
 
+        # get desc if there is 
+        if len(task_desc_text.get("1.0",'end-1c')) == 0:
+            desc = None
+        else:
+            desc = task_desc_text.get()
         # create the create task button
-        task_createtask_button = tk.Button(add_task_frame, text="Create Task", bg="#2F2E41", fg="white", activebackground="#52506e", activeforeground="white")
-        task_createtask_button.pack(pady=(30,0))
-
-        # l1 = tk.Label(left_main_canvas, text="This is the left main frame")
-        # l1.pack()
-
-        # create add a task box
-
-        # Create task button
-        # b1 = tk.Button(left_main_frame, text="Create Task", width=20, bg="#2F2E41",
-        #                activebackground="#52506e", activeforeground="white", fg="white", relief=tk.FLAT)
-        # b1.place(bordermode=tk.INSIDE, relx=.1, rely=.1)
-
-        # Create Project button
-        # b2 = tk.Button(left_main_frame, text="Create Project", width=20,
-        #                bg="#F4E8CE", activebackground="#f5ecd7", relief=tk.FLAT)
-        # b2.place(bordermode=tk.INSIDE, relx=.1, rely=.17)
+        task_createtask_button = tk.Button(add_task_frame, text="Create Task", bg="#2F2E41",
+                                           fg="white", activebackground="#52506e", activeforeground="white", relief=tk.FLAT, 
+                                           command=lambda: [self.add_task_button_action(task_name_entry.get(), task_priority_dropdown.get(), task_calendar_entry.get(), desc), self.update_display_task()])
+        task_createtask_button.pack(pady=(30, 0))
 
         return left_main_frame
 

@@ -4,7 +4,9 @@ sql_task_table = """ CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_name TEXT NOT NULL,
     urgent_lvl CHAR NOT NULL,
-    datetime VARCHAR NOT NULL
+    date_created VARCHAR NOT NULL,
+    due_date VARCHAR NOT NULL,
+    task_desc VARCHAR
     ); """
 
 
@@ -18,7 +20,7 @@ class Task:
         else:
             print("Error! cannot create a database connection.")
 
-    def insertVariableIntoTable(self, task, lvl, datetime):
+    def insertVariableIntoTable(self, task, lvl, date_created, due_date, desc=None):
         """ Inserts variable into SQLite table with specific param
         :param task: user inputted task
         :param lvl: urgency level chosen by user
@@ -29,10 +31,10 @@ class Task:
             cur = self.__conn.cursor()
 
             insert_data_with_param = """ INSERT INTO tasks (
-                task_name, urgent_lvl, datetime)
-                VALUES (?, ?, ?); """
+                task_name, urgent_lvl, date_created, due_date, task_desc)
+                VALUES (?, ?, ?, ?, ?); """
             
-            data_tuple = (task, lvl, datetime)
+            data_tuple = (task, lvl, date_created, due_date, desc)
             cur.execute(insert_data_with_param, data_tuple)
             self.__conn.commit()
             print("Data added")
@@ -40,9 +42,9 @@ class Task:
             print("Failed to insert Python variable into sqlite table", e)
 
 
-    def addTask(self, task_name, lvl, datetime):
+    def addTask(self, task_name, lvl, date_created, duedate, desc):
         self.__task = task_name
-        self.insertVariableIntoTable(self.__task, lvl, datetime)
+        self.insertVariableIntoTable(self.__task, lvl, date_created, duedate, desc)
 
     def create_connection(self, db_path):
         """ create a database connection to the SQLite database
@@ -133,8 +135,17 @@ if __name__ == "__main__":
 
     date_time = datetime.datetime.now().strftime("%d/%M/%Y %H:%M")
 
+    desc = ["test", "hi", ""]
+
     counter = 1
     for x in range(20):
+        start_dt = datetime.date(2022, 8, 9)
+        end_dt = datetime.date(2023, 8, 9)
+        time_between_dates = end_dt - start_dt
+        days_between_dates = time_between_dates.days
+        random_number_of_days = random.randrange(days_between_dates)
+        random_date = start_dt + datetime.timedelta(days=random_number_of_days)
+
         task_name = "test" + str(counter)
-        t.addTask(task_name, str(random.choice(lvl)), date_time)
+        t.addTask(task_name, str(random.choice(lvl)), date_time, random_date, str(random.choice(desc)))
         counter += 1
