@@ -1,3 +1,4 @@
+from contextlib import redirect_stderr
 from random import choices
 import tkinter as tk
 from tkinter import ttk
@@ -66,6 +67,7 @@ class MainPage(tk.Frame):
 
         # create left and right frame
         self.__task_list_frame = self.task_list_frame(main_container)
+
         self.__task_detail_frame = self.task_detail_frame(main_container)
         side_navbar = self.side_nav_bar_frame(main_container)
         sep = ttk.Separator(main_container, orient="vertical")
@@ -85,17 +87,65 @@ class MainPage(tk.Frame):
         self.__task_detail_frame.grid(
             row=0, column=3, padx=(0, 25), pady=(125, 25))
 
+        self.display_task(self.__task_list_frame)
+
         # display container using pack
         main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-    
+
     def update_display_task(self):
         """ Update display of task to task manager window
         :return:
         """
-        self.__main_c.destroy()
-        self.__scroll.destroy()
-        self.display_task(self.__task_list_container)
-        pass
+        # get all task from db
+        all_task = self.__db.get_all_data()
+        task = all_task[-1]
+
+        # inner function to config scrollregion
+        def on_configure(event):
+            self.__main_c.configure(scrollregion=self.__main_c.bbox('all'))
+
+        # resize the canvas scroll region each time the size of the frame changes
+        self.__frame_container.bind('<Configure>', on_configure)
+
+        # match case to get color base on priority level
+        color = "white"
+        match task[2]:
+            case 'i':
+                color = "red"
+            case 'u':
+                color = "#ffbf00"
+            case 'n':
+                color = "#01c2ff"
+        # tk.Label(canvas_frame, text=f"label {x}").pack()
+        # create canvas to store widgets
+        c = tk.Canvas(self._canvas_frame)
+
+        # create int var for checkbox
+        var = tk.IntVar()
+        task_checkbox = tk.Checkbutton(
+            c, variable=var, onvalue="Completed", offvalue="Incomplete")
+
+        # create clickable task name text
+        task_name_button = tk.Button(
+            c, text=task[1], relief=tk.FLAT, font=('calibri', 12, 'bold'))
+
+        # create color box to display priority level
+        pixel = tk.PhotoImage(width=1, height=1)
+        color_box = tk.Button(c, bg=color, state=tk.DISABLED,
+                              height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
+
+        # create due date label
+        due_date = tk.Label(c, text=f"Due {task[4]}", height=1)
+
+        # display widget
+        task_checkbox.grid(row=0, column=0)
+        task_name_button.grid(row=0, column=1, sticky=tk.W)
+        color_box.grid(row=1, column=0, padx=0, pady=0)
+        due_date.grid(row=1, column=1, padx=0, pady=0)
+
+        c.pack(fill=tk.BOTH, side=tk.TOP)
+        self.__main_c.update_idletasks()
+        self.__main_c.configure(scrollregion=self.__main_c.bbox('all'))
 
     def display_task(self, frame):
         """ Display all tasks onto task manager window
@@ -104,23 +154,28 @@ class MainPage(tk.Frame):
         """
         all_task = self.__db.get_all_data()
 
+        self.__frame_container = tk.Frame(frame, width=325, height=500)
+        self.__frame_container.pack()
+
         # inner function to config scrollregion
         def on_configure(event):
             self.__main_c.configure(scrollregion=self.__main_c.bbox('all'))
 
         # create canvas for task list frame
-        self.__main_c = tk.Canvas(frame)
+        self.__main_c = tk.Canvas(self.__frame_container)
         self.__main_c.place(relx=0, rely=0, relheight=1, relwidth=1)
 
         # frame to add stuff to screen
-        canvas_frame = tk.Frame(self.__main_c)
+        self._canvas_frame = tk.Frame(self.__main_c)
         # resize the canvas scroll region each time the size of the frame changes
-        frame.bind('<Configure>', on_configure)
+        self.__frame_container.bind('<Configure>', on_configure)
         # display frame inside the canvas
-        self.__main_c.create_window(0, 0, window=canvas_frame)
+        self.__main_c.create_window(0, 0, window=self._canvas_frame)
+        # canvas_frame.place(relx=0, rely=0, relheight=1, relwidth=1)
 
         # create scroll bar for task list
-        self.__scroll = tk.Scrollbar(frame, command=self.__main_c.yview)
+        self.__scroll = tk.Scrollbar(
+            self.__frame_container, command=self.__main_c.yview)
         self.__scroll.place(relx=0.95, rely=0, relheight=1)
         self.__main_c.configure(yscrollcommand=self.__scroll.set)
 
@@ -138,7 +193,7 @@ class MainPage(tk.Frame):
 
             # tk.Label(canvas_frame, text=f"label {x}").pack()
             # create canvas to store widgets
-            c = tk.Canvas(canvas_frame)
+            c = tk.Canvas(self._canvas_frame)
 
             # create int var for checkbox
             var = tk.IntVar()
@@ -154,10 +209,14 @@ class MainPage(tk.Frame):
             color_box = tk.Button(c, bg=color, state=tk.DISABLED,
                                   height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
 
-            # display widget
+            # create due date label
+            due_date = tk.Label(c, text=f"Due {task[4]}", height=1)
+
+           # display widget
             task_checkbox.grid(row=0, column=0)
-            task_name_button.grid(row=0, column=1)
+            task_name_button.grid(row=0, column=1, sticky=tk.W)
             color_box.grid(row=1, column=0, padx=0, pady=0)
+            due_date.grid(row=1, column=1, padx=0, pady=0)
 
             c.pack(fill=tk.BOTH, side=tk.TOP)
 
@@ -168,11 +227,10 @@ class MainPage(tk.Frame):
         """
         task_list_frame = tk.Frame(container, width=325, height=500)
 
-        self.__task_list_container = tk.Frame(task_list_frame, width=325, height=500)
-        self.__task_list_container.pack()
-        
+        # self.__task_list_container = tk.Frame(task_list_frame, width=325, height=500)
+        # self.__task_list_container.pack()
 
-        self.display_task(self.__task_list_container)
+        # self.display_task(self.__task_list_container)
 
         return task_list_frame
 
@@ -267,14 +325,14 @@ class MainPage(tk.Frame):
         task_desc_label.pack(padx=(0, 15), pady=(10, 0))
         task_desc_text.pack()
 
-        # get desc if there is 
-        if len(task_desc_text.get("1.0",'end-1c')) == 0:
+        # get desc if there is
+        if len(task_desc_text.get("1.0", 'end-1c')) == 0:
             desc = None
         else:
             desc = task_desc_text.get()
         # create the create task button
         task_createtask_button = tk.Button(add_task_frame, text="Create Task", bg="#2F2E41",
-                                           fg="white", activebackground="#52506e", activeforeground="white", relief=tk.FLAT, 
+                                           fg="white", activebackground="#52506e", activeforeground="white", relief=tk.FLAT,
                                            command=lambda: [self.add_task_button_action(task_name_entry.get(), task_priority_dropdown.get(), task_calendar_entry.get(), desc), self.update_display_task()])
         task_createtask_button.pack(pady=(30, 0))
 

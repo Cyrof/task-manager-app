@@ -133,19 +133,20 @@ if __name__ == "__main__":
     
     lvl = ['i', 'u', 'n']
 
-    date_time = datetime.datetime.now().strftime("%d/%M/%Y %H:%M")
+    date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
 
     desc = ["test", "hi", ""]
 
-    counter = 1
-    for x in range(20):
-        start_dt = datetime.date(2022, 8, 9)
-        end_dt = datetime.date(2023, 8, 9)
-        time_between_dates = end_dt - start_dt
-        days_between_dates = time_between_dates.days
-        random_number_of_days = random.randrange(days_between_dates)
-        random_date = start_dt + datetime.timedelta(days=random_number_of_days)
+    # counter = 1
+    # for x in range(20):
+    #     start_dt = datetime.date(2022, 8, 9)
+    #     end_dt = datetime.date(2023, 8, 9)
+    #     time_between_dates = end_dt - start_dt
+    #     days_between_dates = time_between_dates.days
+    #     random_number_of_days = random.randrange(days_between_dates)
+    #     random_date = start_dt + datetime.timedelta(days=random_number_of_days)
+    #     random_date = random_date.strftime("%d/%m/%Y")
 
-        task_name = "test" + str(counter)
-        t.addTask(task_name, str(random.choice(lvl)), date_time, random_date, str(random.choice(desc)))
-        counter += 1
+    #     task_name = "test" + str(counter)
+    #     t.addTask(task_name, str(random.choice(lvl)), date_time, random_date, str(random.choice(desc)))
+    #     counter += 1
