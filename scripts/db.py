@@ -6,7 +6,8 @@ sql_task_table = """ CREATE TABLE IF NOT EXISTS tasks (
     urgent_lvl CHAR NOT NULL,
     date_created VARCHAR NOT NULL,
     due_date VARCHAR NOT NULL,
-    task_desc VARCHAR
+    task_desc VARCHAR,
+    status VARCHAR NOT NULL
     ); """
 
 
@@ -20,7 +21,7 @@ class Task:
         else:
             print("Error! cannot create a database connection.")
 
-    def insertVariableIntoTable(self, task, lvl, date_created, due_date, desc=None):
+    def insertVariableIntoTable(self, task, lvl, date_created, due_date, desc=None, status="Incomplete"):
         """ Inserts variable into SQLite table with specific param
         :param task: user inputted task
         :param lvl: urgency level chosen by user
@@ -31,10 +32,10 @@ class Task:
             cur = self.__conn.cursor()
 
             insert_data_with_param = """ INSERT INTO tasks (
-                task_name, urgent_lvl, date_created, due_date, task_desc)
-                VALUES (?, ?, ?, ?, ?); """
+                task_name, urgent_lvl, date_created, due_date, task_desc, status)
+                VALUES (?, ?, ?, ?, ?, ?); """
             
-            data_tuple = (task, lvl, date_created, due_date, desc)
+            data_tuple = (task, lvl, date_created, due_date, desc, status)
             cur.execute(insert_data_with_param, data_tuple)
             self.__conn.commit()
             print("Data added")
@@ -42,9 +43,9 @@ class Task:
             print("Failed to insert Python variable into sqlite table", e)
 
 
-    def addTask(self, task_name, lvl, date_created, duedate, desc):
+    def addTask(self, task_name, lvl, date_created, duedate, desc, status):
         self.__task = task_name
-        self.insertVariableIntoTable(self.__task, lvl, date_created, duedate, desc)
+        self.insertVariableIntoTable(self.__task, lvl, date_created, duedate, desc, status)
 
     def create_connection(self, db_path):
         """ create a database connection to the SQLite database
@@ -81,61 +82,120 @@ class Task:
         :param id: id of the task
         :return:
         """
-        sql = 'DELETE FROM tasks WHERE id=?'
-        cur = self.__conn.cursor()
-        cur.execute(sql, (id,))
-        self.__conn.commit()
-        print("Task deleted.")
+        try:
+            sql = 'DELETE FROM tasks WHERE id=?'
+            cur = self.__conn.cursor()
+            cur.execute(sql, (id,))
+            self.__conn.commit()
+            print("Task deleted.")
+        except Exception as e:
+            print(e)
     
     def delete_all_task(self):
         """
         Delete all tasks in the tasks table
         :return:
         """
-        sql = 'DELETE FROM tasks'
-        sql2 = 'UPDATE sqlite_sequence SET SEQ=0 WHERE NAME="tasks";'
-        cur = self.__conn.cursor()
-        cur.execute(sql)
-        cur.execute(sql2)
-        self.__conn.commit()
-        print("All Tasks deleted")
+        try:
+            sql = 'DELETE FROM tasks'
+            sql2 = 'UPDATE sqlite_sequence SET SEQ=0 WHERE NAME="tasks";'
+            cur = self.__conn.cursor()
+            cur.execute(sql)
+            cur.execute(sql2)
+            self.__conn.commit()
+            print("All Tasks deleted")
+        except Exception as e:
+            print(e)
     
     def delete_table(self):
         """ Delete table from db file
         :return:
         """
-        sql = 'DROP TABLE tasks;'
-        cur = self.__conn.cursor()
-        cur.execute(sql)
-        self.__conn.commit()
-        print("Table deleted")
+        try:
+            sql = 'DROP TABLE tasks;'
+            cur = self.__conn.cursor()
+            cur.execute(sql)
+            self.__conn.commit()
+            print("Table deleted")
+        except Exception as e:
+            print(e)
     
     def get_all_data(self):
         """ Get all data from db
         :param:
         :return data as a 2d list:
         """
-        sql = 'SELECT * FROM tasks'
-        cur = self.__conn.cursor()
-        cur.execute(sql)
+        try:
+            sql = 'SELECT * FROM tasks'
+            cur = self.__conn.cursor()
+            cur.execute(sql)
 
-        rows = cur.fetchall()
+            rows = cur.fetchall()
 
-        data = [[d for d in row] for row in rows]
-        return data
+            data = [[d for d in row] for row in rows]
+            return data
+        except Exception as e:
+            print(e)
+    
+    def get_data_by_id(self, id):
+        """ Get date by id
+        :param id: id of data 
+        :return data:
+        """
+        try:
+            get_by_id = """ SELECT * FROM tasks WHERE id=?"""
+
+            cur = self.__conn.cursor()
+            cur.execute(get_by_id, (id,))
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print("Failed to read data from table", e)
+            return None
+        
+    def check_table(self):
+        """ Check if table is empty
+        :param:
+        :if table has data:
+        :return False:
+        :else:
+        :return True:
+        :return bool:
+        """
+        try:
+            sql = """SELECT COUNT(*) FROM tasks"""
+
+            cur = self.__conn.cursor()
+            cur.execute(sql)
+
+            data = cur.fetchall()
+            
+            if int(data[0][0]) == 0:
+                return False
+            else:
+                return True
+
+        except Exception as e:
+            print(e)
+
 
 
 if __name__ == "__main__":
     import random
     import datetime
     t = Task()
+    # t.delete_table()
+    # print(t.get_data_by_id(2))
     t.delete_all_task()
+    # print(t.check_table())
     
     lvl = ['i', 'u', 'n']
 
     date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
 
     desc = ["test", "hi", ""]
+
+
 
     # counter = 1
     # for x in range(20):

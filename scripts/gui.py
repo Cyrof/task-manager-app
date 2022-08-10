@@ -1,8 +1,5 @@
-from contextlib import redirect_stderr
-from random import choices
 import tkinter as tk
 from tkinter import ttk
-from turtle import width
 from tkcalendar import *
 import datetime
 from db import Task
@@ -57,7 +54,11 @@ class MainPage(tk.Frame):
         :param controller: instance of GUI class
         :return:
         """
+        # db instance
         self.__db = Task()
+
+        # check if task detail function ran
+        self.__task_detail_bool = False
 
         # inherit from parent
         tk.Frame.__init__(self, parent)
@@ -67,7 +68,6 @@ class MainPage(tk.Frame):
 
         # create left and right frame
         self.__task_list_frame = self.task_list_frame(main_container)
-
         self.__task_detail_frame = self.task_detail_frame(main_container)
         side_navbar = self.side_nav_bar_frame(main_container)
         sep = ttk.Separator(main_container, orient="vertical")
@@ -78,9 +78,6 @@ class MainPage(tk.Frame):
 
         # place left and right frame into container using grid
         side_navbar.grid(row=0, column=0)
-        # left_frame.pack(side=tk.LEFT)
-        # right_frame.pack(side=tk.RIGHT, padx=25, pady=(125, 25))
-        # right_frame.grid(row=0, column=1, padx=25, pady=(125, 25))
         self.__task_list_frame.grid(
             row=0, column=1, padx=(25, 0), pady=(125, 25))
         sep.grid(row=0, column=2)
@@ -89,8 +86,155 @@ class MainPage(tk.Frame):
 
         self.display_task(self.__task_list_frame)
 
+        if self.__db.check_table():
+            self.display_task_detail(self.__task_detail_frame, 1)
+            self.__task_detail_bool = True
+
         # display container using pack
         main_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+    def task_detail_edit(self, frame, id):
+        pass
+
+    def display_task_detail(self, frame, id):
+        """ display tast details
+        :param frame: parent frame
+        :param id: id of task
+        :return:
+        """
+        # get task
+        task = self.__db.get_data_by_id(id)
+
+        # format date for due date text
+        task_due_date = task[0][4].split("/")
+        date = datetime.datetime(int(task_due_date[2]), int(
+            task_due_date[1]), int(task_due_date[0]))
+        date = date.strftime("%d %b %Y")
+
+        # match case to get color and priority level
+        color = "white"
+        priority_tag_text = "Low"
+        match task[0][2]:
+            case 'i':
+                color = "red"
+                priority_tag_text = "High"
+            case 'u':
+                color = "#ffbf00"
+                priority_tag_text = "Medium"
+            case 'n':
+                color = "#01c2ff"
+                priority_tag_text = "Low"
+
+        # create second container frame
+        self.__detail_container = tk.Frame(frame, width=325, height=500)
+        self.__detail_container.pack()
+
+        # create canvas for task details
+        self.__detail_c = tk.Canvas(self.__detail_container)
+        self.__detail_c.place(relx=0, rely=0, relheight=1, relwidth=1)
+
+        # create frame to put widgets
+        self._detail_c_frame = tk.Frame(self.__detail_c)
+
+        # display frame onto canvas
+        self._detail_c_frame.place(relx=0, rely=0, relheight=1, relwidth=1)
+
+        # create task detail label
+        task_detail_label = tk.Label(
+            self._detail_c_frame, text="Task details", fg="#2F80ED", font=('segoe ui', 12, 'bold'))
+
+        # create status label
+        task_status_label = tk.Label(
+            self._detail_c_frame, text=f"{task[0][6]}", bg="#e0e0e0", fg="black", font=('segoe ui', 12))
+
+        # create table for task name
+        task_name = tk.Label(
+            self._detail_c_frame, text=f"{task[0][1]}", font=('segoe ui', 15, 'bold'))
+
+        # create priority level color widget
+        priority_tag = tk.Label(
+            self._detail_c_frame, text=priority_tag_text, bg=color, fg="white", width=7)
+
+        # create task desc label
+        task_desc_label = tk.Label(self._detail_c_frame, text="Task description", font=(
+            'segoe ui', 8, 'bold'), fg="#6D6D6D")
+
+        # create text area to for desc
+        desc_box = tk.Text(self._detail_c_frame, height=10, width=30,
+                           highlightthickness=0, borderwidth=0, bg="#f0f0f0", state=tk.DISABLED)
+        desc_box.insert(tk.END, f"{task[0][5]}")
+
+        # create due date label and date widget
+        due_date_label = tk.Label(self._detail_c_frame, text="Due Date", font=(
+            'segoe ui', 8, 'bold'), fg="#6d6d6d")
+        due_date = tk.Label(self._detail_c_frame,
+                            text=f"{date}", bg="#e0e0e0", font=('segoe ui', 12))
+
+        # create seperater line 1
+        sep1 = ttk.Separator(self._detail_c_frame, orient="horizontal")
+
+        # create date created
+        date_time = task[0][3].split(' ')
+        date_created = date_time[0].split('/')
+        x = datetime.datetime(int(date_created[2]), int(
+            date_created[1]), int(date_created[0]))
+        date_created = x.strftime("%d %b %Y %B")
+        date_created = f"{str(date_created)} {date_time[1]}"
+        task_date_created = tk.Label(
+            self._detail_c_frame, text=f"Created on {date_created}", font=('segoe ui', 7), fg="#6d6d6d")
+
+        # create seperater line 2
+        sep2 = ttk.Separator(self._detail_c_frame, orient="horizontal")
+
+        # create delete task button
+        delete_button = tk.Button(
+            self._detail_c_frame, text="Delete Task", font=('segoe ui', 10, 'bold'), relief=tk.FLAT, fg="red", activeforeground="red")
+
+        # create edit button
+        edit_button = tk.Button(self._detail_c_frame,
+                                text="Edit", font=('segoe ui', 10, 'bold'), relief=tk.FLAT)
+
+        # create mark complete button
+        complete_button = tk.Button(
+            self._detail_c_frame, text="Mark as Completed", font=('segoe ui', 10, 'bold'), relief=tk.FLAT, fg="#2F80ED", activeforeground="#2F80ED")
+
+        task_detail_label.grid(row=0, column=0, pady=(10, 0))
+        task_status_label.grid(row=0, column=1, pady=(10, 0), sticky="w")
+        task_name.grid(row=1, column=0, columnspan=3, sticky="w", padx=(15, 0))
+        priority_tag.grid(row=2, column=0, pady=(
+            5, 10), sticky="w", padx=(20, 0))
+        task_desc_label.grid(row=3, column=0)
+        desc_box.grid(row=4, column=0, columnspan=3, padx=(20, 0))
+        due_date_label.grid(row=5, column=0, sticky="w", padx=(20, 0))
+        due_date.grid(row=6, column=0, padx=(20, 0))
+        sep1.grid(row=7, column=0, ipadx=150, pady=(
+            10, 0), padx=(10, 0), columnspan=5)
+        task_date_created.grid(row=8, column=0, columnspan=2)
+        sep2.grid(row=9, column=0, ipadx=150, padx=(
+            10, 0), pady=(70, 0), columnspan=5)
+        delete_button.grid(row=10, column=0, pady=(20,0))
+        edit_button.grid(row=10, column=1, pady=(20,0))
+        complete_button.grid(row=10, column=2, pady=(20,0))
+
+    def update_display_task_detail(self, frame, id):
+        """ Update display task detail
+        :param frame: parent frame
+        :param id: id of task
+        :return:
+        """
+        self.__detail_container.destroy()
+        self.display_task_detail(frame, id)
+
+    def display_task_detail_check(self, id):
+        """ Check which function to run 
+        :param id: id of task
+        :return:
+        """
+        if self.__task_detail_bool:
+            self.update_display_task_detail(self.__task_detail_frame, id)
+        else:
+            self.display_task_detail(self.__task_detail_frame, id)
+            self.__task_detail_bool = True
 
     def update_display_task(self):
         """ Update display of task to task manager window
@@ -127,7 +271,8 @@ class MainPage(tk.Frame):
 
         # create clickable task name text
         task_name_button = tk.Button(
-            c, text=task[1], relief=tk.FLAT, font=('calibri', 12, 'bold'))
+            c, text=task[1], relief=tk.FLAT, font=('segoe ui', 12, 'bold'),
+            command=lambda id=task[0]: [self.display_task_detail_check(id)])
 
         # create color box to display priority level
         pixel = tk.PhotoImage(width=1, height=1)
@@ -202,7 +347,8 @@ class MainPage(tk.Frame):
 
             # create clickable task name text
             task_name_button = tk.Button(
-                c, text=task[1], relief=tk.FLAT, font=('calibri', 12, 'bold'))
+                c, text=task[1], relief=tk.FLAT, font=('segoe ui', 12, 'bold'),
+                command=lambda id=task[0]: [self.display_task_detail_check(id)])
 
             # create color box to display priority level
             pixel = tk.PhotoImage(width=1, height=1)
@@ -227,11 +373,6 @@ class MainPage(tk.Frame):
         """
         task_list_frame = tk.Frame(container, width=325, height=500)
 
-        # self.__task_list_container = tk.Frame(task_list_frame, width=325, height=500)
-        # self.__task_list_container.pack()
-
-        # self.display_task(self.__task_list_container)
-
         return task_list_frame
 
     def task_detail_frame(self, container):
@@ -240,12 +381,10 @@ class MainPage(tk.Frame):
         :return frame: return task detail frame
         """
         task_detail_frame = tk.Frame(container, width=325, height=500)
-        l1 = tk.Label(task_detail_frame, text="This is the task detail frame")
-        l1.place(relx=.2, rely=.5)
 
         return task_detail_frame
 
-    def add_task_button_action(self, task_name, priority, due_date, desc=None):
+    def add_task_button_action(self, task_name, priority, due_date, desc=None, status="Incomplete"):
         match priority:
             case "Important":
                 lvl = "i"
@@ -254,14 +393,14 @@ class MainPage(tk.Frame):
             case "Normal":
                 lvl = "n"
 
-        date_time = datetime.datetime.now().strftime("%d/%M/%Y %H:%M")
+        date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
 
-        self.__db.addTask(task_name, lvl, date_time, due_date, desc)
+        self.__db.addTask(task_name, lvl, date_time, due_date, desc, status)
 
     def side_nav_bar_frame(self, container):
-        """ Create left side for the main page
+        """ Create left nav bar for the main page
         :param container: Container frame of main page
-        :return frame: return left side frame
+        :return frame: return nav bar frame
         """
         # create navbar frame
         left_main_frame = tk.Frame(
@@ -288,19 +427,19 @@ class MainPage(tk.Frame):
 
         # create add task label and display onto frame
         add_task_label = tk.Label(
-            add_task_frame, text="Add a Task", font=('Nunito Sans', 11, 'bold'), bg="#F8DEAC")
+            add_task_frame, text="Add a Task", font=('segoe ui', 11, 'bold'), bg="#F8DEAC")
         add_task_label.pack(padx=(0, 80), pady=(10, 40))
 
         # create task task name label and task name entry
         task_name_label = tk.Label(
-            add_task_frame, text="Task Name", bg="#F8DEAC", font=('Nunito Sans', 9))
+            add_task_frame, text="Task Name", bg="#F8DEAC", font=('segoe ui', 9))
         task_name_entry = tk.Entry(add_task_frame, width=25)
         task_name_label.pack(padx=(0, 100))
         task_name_entry.pack()
 
         # create task priority label and dropdown list
         task_priority_label = tk.Label(
-            add_task_frame, text="Task Piority", bg="#F8DEAC", font=('Nunito Sans', 9))
+            add_task_frame, text="Task Piority", bg="#F8DEAC", font=('segoe ui', 9))
         # create string var
         dropdown_var = tk.StringVar()
         task_priority_dropdown = ttk.Combobox(
@@ -312,7 +451,7 @@ class MainPage(tk.Frame):
 
         # create date entry box
         task_duedate_label = tk.Label(
-            add_task_frame, text="Due Date", bg="#F8DEAC", font=('Nunito Sans', 9))
+            add_task_frame, text="Due Date", bg="#F8DEAC", font=('segoe ui', 9))
         task_calendar_entry = DateEntry(
             add_task_frame, selectmode="day", width=22)
         task_duedate_label.pack(padx=(0, 110), pady=(10, 0))
@@ -320,20 +459,25 @@ class MainPage(tk.Frame):
 
         # create optional task description
         task_desc_label = tk.Label(
-            add_task_frame, text="Task Description (Optional)", bg="#F8DEAC", font=('Nunito Sans', 9))
+            add_task_frame, text="Task Description (Optional)", bg="#F8DEAC", font=('segoe ui', 9))
         task_desc_text = tk.Text(add_task_frame, width=18, height=5)
         task_desc_label.pack(padx=(0, 15), pady=(10, 0))
         task_desc_text.pack()
 
-        # get desc if there is
-        if len(task_desc_text.get("1.0", 'end-1c')) == 0:
-            desc = None
-        else:
-            desc = task_desc_text.get()
+        def clear():
+            task_name_entry.delete(0, tk.END)
+            task_priority_dropdown.set("")
+            task_calendar_entry.set_date(datetime.date.today())
+            task_desc_text.delete(1.0, tk.END)
+
+        def get_desc():
+            desc = task_desc_text.get("1.0", "end")
+            return desc
         # create the create task button
         task_createtask_button = tk.Button(add_task_frame, text="Create Task", bg="#2F2E41",
                                            fg="white", activebackground="#52506e", activeforeground="white", relief=tk.FLAT,
-                                           command=lambda: [self.add_task_button_action(task_name_entry.get(), task_priority_dropdown.get(), task_calendar_entry.get(), desc), self.update_display_task()])
+                                           command=lambda: [self.add_task_button_action(task_name_entry.get(), task_priority_dropdown.get(), task_calendar_entry.get(), get_desc()),
+                                                            self.update_display_task(), clear()])
         task_createtask_button.pack(pady=(30, 0))
 
         return left_main_frame
