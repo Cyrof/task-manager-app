@@ -1,6 +1,9 @@
+from platform import release
 import tkinter as tk
 from tkinter import ttk
+from turtle import width
 from tkcalendar import *
+from tkfontawesome import icon_to_image
 import datetime
 from db import Task
 
@@ -54,8 +57,16 @@ class MainPage(tk.Frame):
         :param controller: instance of GUI class
         :return:
         """
+        # create dictionary for dynamic var
+        self.__canvas_var = {}
+
         # db instance
         self.__db = Task()
+
+        # get id of first element
+        datas = self.__db.get_all_data()
+        for data in datas:
+            first_id = data[0]
 
         # check if task detail function ran
         self.__task_detail_bool = False
@@ -87,7 +98,7 @@ class MainPage(tk.Frame):
         self.display_task(self.__task_list_frame)
 
         if self.__db.check_table():
-            self.display_task_detail(self.__task_detail_frame, 1)
+            self.display_task_detail(self.__task_detail_frame, first_id)
             self.__task_detail_bool = True
 
         # display container using pack
@@ -188,11 +199,13 @@ class MainPage(tk.Frame):
 
         # create delete task button
         delete_button = tk.Button(
-            self._detail_c_frame, text="Delete Task", font=('segoe ui', 10, 'bold'), relief=tk.FLAT, fg="red", activeforeground="red")
+            self._detail_c_frame, text="Delete Task", font=('segoe ui', 10, 'bold'), relief=tk.FLAT, fg="red", activeforeground="red", command=lambda: self.delete_task(task[0][0]))
 
         # create edit button
+        pen = icon_to_image("pen", scale_to_width=20, fill="#black")
         edit_button = tk.Button(self._detail_c_frame,
-                                text="Edit", font=('segoe ui', 10, 'bold'), relief=tk.FLAT)
+                                image=pen, relief=tk.FLAT)
+        edit_button.image = pen
 
         # create mark complete button
         complete_button = tk.Button(
@@ -200,6 +213,7 @@ class MainPage(tk.Frame):
 
         task_detail_label.grid(row=0, column=0, pady=(10, 0))
         task_status_label.grid(row=0, column=1, pady=(10, 0), sticky="w")
+        edit_button.grid(row=0, column=2, pady=(10, 0), sticky="w")
         task_name.grid(row=1, column=0, columnspan=3, sticky="w", padx=(15, 0))
         priority_tag.grid(row=2, column=0, pady=(
             5, 10), sticky="w", padx=(20, 0))
@@ -211,10 +225,23 @@ class MainPage(tk.Frame):
             10, 0), padx=(10, 0), columnspan=5)
         task_date_created.grid(row=8, column=0, columnspan=2)
         sep2.grid(row=9, column=0, ipadx=150, padx=(
-            10, 0), pady=(70, 0), columnspan=5)
-        delete_button.grid(row=10, column=0, pady=(20,0))
-        edit_button.grid(row=10, column=1, pady=(20,0))
-        complete_button.grid(row=10, column=2, pady=(20,0))
+            10, 0), pady=(80, 0), columnspan=5)
+        delete_button.grid(row=10, column=0, pady=(10, 0))
+        # edit_button.grid(row=10, column=1, pady=(20,0), sticky="w")
+        complete_button.grid(row=10, column=1, pady=(
+            10, 0), padx=(50, 0), sticky="e")
+
+    def delete_task(self, id):
+        """ Delete task from db
+        :param id: id of task
+        :return:
+        """
+        task = self.__db.get_data_by_id(id)
+        self.__canvas_var[id].destroy()
+        self.__db.delete_task(id)
+
+        # self.__canvas_var[task[0]].destroy()
+        self.__main_c.update_idletasks()
 
     def update_display_task_detail(self, frame, id):
         """ Update display task detail
@@ -235,6 +262,7 @@ class MainPage(tk.Frame):
         else:
             self.display_task_detail(self.__task_detail_frame, id)
             self.__task_detail_bool = True
+        
 
     def update_display_task(self):
         """ Update display of task to task manager window
@@ -260,27 +288,28 @@ class MainPage(tk.Frame):
                 color = "#ffbf00"
             case 'n':
                 color = "#01c2ff"
-        # tk.Label(canvas_frame, text=f"label {x}").pack()
+
+        v_name = f"c{task[0]}"        
         # create canvas to store widgets
-        c = tk.Canvas(self._canvas_frame)
+        v_name = tk.Canvas(self._canvas_frame)
 
         # create int var for checkbox
         var = tk.IntVar()
         task_checkbox = tk.Checkbutton(
-            c, variable=var, onvalue="Completed", offvalue="Incomplete")
+            v_name, variable=var, onvalue="Completed", offvalue="Incomplete")
 
         # create clickable task name text
         task_name_button = tk.Button(
-            c, text=task[1], relief=tk.FLAT, font=('segoe ui', 12, 'bold'),
+            v_name, text=task[1], relief=tk.FLAT, font=('segoe ui', 12, 'bold'),
             command=lambda id=task[0]: [self.display_task_detail_check(id)])
 
         # create color box to display priority level
         pixel = tk.PhotoImage(width=1, height=1)
-        color_box = tk.Button(c, bg=color, state=tk.DISABLED,
+        color_box = tk.Button(v_name, bg=color, state=tk.DISABLED,
                               height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
 
         # create due date label
-        due_date = tk.Label(c, text=f"Due {task[4]}", height=1)
+        due_date = tk.Label(v_name, text=f"Due {task[4]}", height=1)
 
         # display widget
         task_checkbox.grid(row=0, column=0)
@@ -288,9 +317,58 @@ class MainPage(tk.Frame):
         color_box.grid(row=1, column=0, padx=0, pady=0)
         due_date.grid(row=1, column=1, padx=0, pady=0)
 
-        c.pack(fill=tk.BOTH, side=tk.TOP)
+        self.__canvas_var[task[0]] = v_name
+
+        v_name.pack(fill=tk.BOTH, side=tk.TOP)
         self.__main_c.update_idletasks()
         self.__main_c.configure(scrollregion=self.__main_c.bbox('all'))
+    
+    # def new_display_task(self, frame):
+    #     """  Display all task onto task manager window
+    #     :param frame: parent frame
+    #     :return: 
+    #     """
+    #     # get all task from db
+    #     all_task = self.__db.get_all_data()
+
+    #     # create secondary frame container
+    #     self.__display_frame_container = tk.Frame(frame, width=325, height=500)
+    #     self.__display_frame_container.pack()
+
+    #     # inner function to config scrollregion
+    #     def on_configure(event):
+    #         self._display_task_c.configure(scrollregion=self._display_task_c.bbox('all'))
+
+    #     # create canvas for task list frame
+    #     self._display_task_c = tk.Canvas(self.__display_frame_container)
+    #     self._display_task_c.place(relx=0, rely=0, relheight=1, relwidth=1)
+
+    #     # frame to add stuff to screen
+    #     self._canvas_frame = tk.Frame(self._display_task_c)
+
+    #     # resize the canvas scroll region each time the size of the frame changes
+    #     self.__display_frame_container.bind('<Configure>', on_configure)
+
+    #     # display frame inside the canvas
+    #     self._display_task_c.create_window(0, 0, window=self._canvas_frame)
+
+    #     # create scroll bar for task list
+    #     self._scroll = tk.Scrollbar(self.__display_frame_container, command=self._display_task_c.yview)
+    #     self._scroll.place(relx=0.95, rely=0, relheight=1)
+    #     self._display_task_c.configure(yscrollcommand=self._scroll.set)
+
+    #     # for loop to display task onto task list page
+    #     for task in all_task:
+    #         tk.Label(self._canvas_frame, text=f"{task[1]}").pack(side=tk.TOP)
+    
+    # def update_task_list(self, frame):
+    #     """ Update task list 
+    #     :param frame: parent frame
+    #     :return:
+    #     """
+    #     self.__display_frame_container.destroy()
+    #     self.new_display_task(frame)
+
 
     def display_task(self, frame):
         """ Display all tasks onto task manager window
@@ -326,6 +404,7 @@ class MainPage(tk.Frame):
 
         # for loop to display task onto task list page
         for task in all_task:
+            v_name = f"c{task[0]}"
             # match case to get color base on priority level
             color = "white"
             match task[2]:
@@ -338,25 +417,25 @@ class MainPage(tk.Frame):
 
             # tk.Label(canvas_frame, text=f"label {x}").pack()
             # create canvas to store widgets
-            c = tk.Canvas(self._canvas_frame)
+            v_name = tk.Canvas(self._canvas_frame)
 
             # create int var for checkbox
             var = tk.IntVar()
             task_checkbox = tk.Checkbutton(
-                c, variable=var, onvalue="Completed", offvalue="Incomplete")
+                v_name, variable=var, onvalue="Completed", offvalue="Incomplete")
 
             # create clickable task name text
             task_name_button = tk.Button(
-                c, text=task[1], relief=tk.FLAT, font=('segoe ui', 12, 'bold'),
+                v_name, text=task[1], relief=tk.FLAT, font=('segoe ui', 12, 'bold'),
                 command=lambda id=task[0]: [self.display_task_detail_check(id)])
 
             # create color box to display priority level
             pixel = tk.PhotoImage(width=1, height=1)
-            color_box = tk.Button(c, bg=color, state=tk.DISABLED,
+            color_box = tk.Button(v_name, bg=color, state=tk.DISABLED,
                                   height=1, relief=tk.FLAT, padx=0, pady=0, image=pixel)
 
             # create due date label
-            due_date = tk.Label(c, text=f"Due {task[4]}", height=1)
+            due_date = tk.Label(v_name, text=f"Due {task[4]}", height=1)
 
            # display widget
             task_checkbox.grid(row=0, column=0)
@@ -364,7 +443,9 @@ class MainPage(tk.Frame):
             color_box.grid(row=1, column=0, padx=0, pady=0)
             due_date.grid(row=1, column=1, padx=0, pady=0)
 
-            c.pack(fill=tk.BOTH, side=tk.TOP)
+            self.__canvas_var[task[0]] = v_name
+
+            v_name.pack(fill=tk.BOTH, side=tk.TOP)
 
     def task_list_frame(self, container):
         """ Create the task list frame for the main page
