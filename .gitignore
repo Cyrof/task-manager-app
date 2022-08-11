@@ -134,3 +134,5 @@ tasks.db
 git.py
 Ez-git-main/
 test.py
+build/
+main.spec
