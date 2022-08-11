@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import sqlite3
 
 sql_task_table = """ CREATE TABLE IF NOT EXISTS tasks (
@@ -177,7 +178,38 @@ class Task:
 
         except Exception as e:
             print(e)
+        
+    def update_status(self, status, id):
+        """ Update status 
+        :param status: new status to update
+        :return:
+        """
+        try:
+            update_stat = """ UPDATE tasks SET status=? WHERE id=?"""
+            data_tuple = (status, id)
+            cur = self.__conn.cursor()
+            cur.execute(update_stat, data_tuple)
+            self.__conn.commit()
+            print("Status Updated")
+        except Exception as e:
+            print(e)
 
+    def update_task(self, id , taskname, priority, duedate, desc):
+        """ Update task
+        :param id: id of task
+        :param updated_task: tuple of data to update
+        :return:
+        """
+        try:
+            update_sql = """ UPDATE tasks SET 
+            task_name=?, urgent_lvl=?, due_date=?, task_desc=? WHERE id=?"""
+            data_tuple = (taskname, priority, duedate, desc, id)
+            cur = self.__conn.cursor()
+            cur.execute(update_sql, data_tuple)
+            self.__conn.commit()
+            print("Task updated")
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":
@@ -197,16 +229,16 @@ if __name__ == "__main__":
 
 
 
-    # counter = 1
-    # for x in range(20):
-    #     start_dt = datetime.date(2022, 8, 9)
-    #     end_dt = datetime.date(2023, 8, 9)
-    #     time_between_dates = end_dt - start_dt
-    #     days_between_dates = time_between_dates.days
-    #     random_number_of_days = random.randrange(days_between_dates)
-    #     random_date = start_dt + datetime.timedelta(days=random_number_of_days)
-    #     random_date = random_date.strftime("%d/%m/%Y")
+    counter = 1
+    for x in range(20):
+        start_dt = datetime.date(2022, 8, 9)
+        end_dt = datetime.date(2023, 8, 9)
+        time_between_dates = end_dt - start_dt
+        days_between_dates = time_between_dates.days
+        random_number_of_days = random.randrange(days_between_dates)
+        random_date = start_dt + datetime.timedelta(days=random_number_of_days)
+        random_date = random_date.strftime("%d/%m/%Y")
 
-    #     task_name = "test" + str(counter)
-    #     t.addTask(task_name, str(random.choice(lvl)), date_time, random_date, str(random.choice(desc)))
-    #     counter += 1
+        task_name = "test" + str(counter)
+        t.addTask(task_name, str(random.choice(lvl)), date_time, random_date, str(random.choice(desc)), "Incomplete")
+        counter += 1
