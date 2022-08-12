@@ -8,7 +8,8 @@
 
 ## General Info
 This project is a simple task manager application created with Python and SQLite. 
-The aim of this project is to assist with task management.
+The aim of this project is to assist with task management. <br>
+If there are any features that you would like to see be included or bugs, please let me know by creating an issue.
 
 ## Technologies
 Project is created with:
