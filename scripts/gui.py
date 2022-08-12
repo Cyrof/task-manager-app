@@ -4,7 +4,7 @@ from tkcalendar import *
 from tkfontawesome import icon_to_image
 from tkinter import font
 import datetime
-from db import Task
+from scripts.db import Task
 
 
 class GUI(tk.Tk):
